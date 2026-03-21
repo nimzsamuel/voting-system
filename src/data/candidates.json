@@ -1,0 +1,82 @@
+[
+  {
+    "id": "CAN001",
+    "fullName": "Samuel Nimyel",
+    "position": "President",
+    "department": "Computer Science",
+    "level": "400",
+    "manifesto": "I will champion student welfare, improve campus facilities, and ensure every student's voice is heard.",
+    "photo": "https://api.dicebear.com/7.x/avataaars/svg?seed=Samuel",
+    "votes": 0
+  },
+  {
+    "id": "CAN002",
+    "fullName": "Blessing Pam",
+    "position": "President",
+    "department": "Mass Communication",
+    "level": "400",
+    "manifesto": "My vision is a united student body with better academic support, mental health resources, and campus security.",
+    "photo": "https://api.dicebear.com/7.x/avataaars/svg?seed=Blessing",
+    "votes": 0
+  },
+  {
+    "id": "CAN003",
+    "fullName": "Usman James",
+    "position": "Vice President",
+    "department": "Political Science",
+    "level": "300",
+    "manifesto": "I will bridge the gap between students and the university administration for a better campus experience.",
+    "photo": "https://api.dicebear.com/7.x/avataaars/svg?seed=Usman",
+    "votes": 0
+  },
+  {
+    "id": "CAN004",
+    "fullName": "Chioma Okafor",
+    "position": "Vice President",
+    "department": "Accounting",
+    "level": "300",
+    "manifesto": "Transparency and accountability will guide my service. Students deserve a representative they can trust.",
+    "photo": "https://api.dicebear.com/7.x/avataaars/svg?seed=Chioma",
+    "votes": 0
+  },
+  {
+    "id": "CAN005",
+    "fullName": "Ibrahim Musa",
+    "position": "Secretary General",
+    "department": "Public Administration",
+    "level": "300",
+    "manifesto": "I will ensure proper documentation and communication of all student union activities and decisions.",
+    "photo": "https://api.dicebear.com/7.x/avataaars/svg?seed=Ibrahim",
+    "votes": 0
+  },
+  {
+    "id": "CAN006",
+    "fullName": "Christabel Zere",
+    "position": "Secretary General",
+    "department": "English",
+    "level": "300",
+    "manifesto": "Effective communication starts with me. I will keep students informed and engaged at all times.",
+    "photo": "https://api.dicebear.com/7.x/avataaars/svg?seed=Amara",
+    "votes": 0
+  },
+  {
+    "id": "CAN007",
+    "fullName": "Tunde Fashola",
+    "position": "Financial Secretary",
+    "department": "Accounting",
+    "level": "400",
+    "manifesto": "I will ensure every kobo of student funds is properly managed and accounted for.",
+    "photo": "https://api.dicebear.com/7.x/avataaars/svg?seed=Tunde",
+    "votes": 0
+  },
+  {
+    "id": "CAN008",
+    "fullName": "Job Dung",
+    "position": "Financial Secretary",
+    "department": "Economics",
+    "level": "400",
+    "manifesto": "Sound financial management and full transparency in student union budgeting is my top priority.",
+    "photo": "https://api.dicebear.com/7.x/avataaars/svg?seed=Kemi",
+    "votes": 0
+  }
+]

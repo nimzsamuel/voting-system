@@ -1,0 +1,57 @@
+[
+  {
+    "id": "STU001",
+    "matricNumber": "PLASU/2020/FNAS/0014",
+    "fullName": "Nandul James",
+    "department": "Computer Science",
+    "level": "300",
+    "email": "nanduljames@uni.edu.ng",
+    "password": "Nandul@1234",
+    "hasVoted": false,
+    "isRegistered": true
+  },
+  {
+    "id": "STU002",
+    "matricNumber": "PLASU/2020/FNAS/0012",
+    "fullName": "Emeka Nwosu",
+    "department": "Computer Science",
+    "level": "400",
+    "email": "emeka.nwosu@uni.edu.ng",
+    "password": "Emeka@1234",
+    "hasVoted": false,
+    "isRegistered": true
+  },
+  {
+    "id": "STU003",
+    "matricNumber": "PLASU/2020/FLAW/0012",
+    "fullName": "Joyce Pam",
+    "department": "Law",
+    "level": "500",
+    "email": "joycepam@uni.edu.ng",
+    "password": "Joyce@1234",
+    "hasVoted": false,
+    "isRegistered": true
+  },
+  {
+    "id": "STU004",
+    "matricNumber": "PLASU/2020/FHS/0001",
+    "fullName": "Manna Nimyel",
+    "department": "Medicine",
+    "level": "600",
+    "email": "mannanimyel@uni.edu.ng",
+    "password": "Manna@1234",
+    "hasVoted": false,
+    "isRegistered": true
+  },
+  {
+    "id": "STU005",
+    "matricNumber": "PLASU/2020/FSS/0001",
+    "fullName": "Ngozi Obi",
+    "department": "Economics",
+    "level": "200",
+    "email": "ngozi.obi@uni.edu.ng",
+    "password": "Ngozi@1234",
+    "hasVoted": false,
+    "isRegistered": true
+  }
+]
