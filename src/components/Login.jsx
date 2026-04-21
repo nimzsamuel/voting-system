@@ -1,5 +1,15 @@
 import { useState } from 'react'
-import { getStudents, getAdmin, setSession } from '../utils/storage'
+import {
+  getStudents,
+  getAdmin,
+  setSession,
+  getVotes,
+  recordFailedAttempt,
+  isAccountLocked,
+  resetLoginAttempts,
+  generateOTP,
+  saveOTP
+} from '../utils/storage'
 
 function Login({ setPage, setCurrentUser }) {
   const [matricNumber, setMatricNumber] = useState('')
@@ -18,9 +28,9 @@ function Login({ setPage, setCurrentUser }) {
     setLoading(true)
 
     setTimeout(() => {
-      // Check admin login
+      // ── Admin login ──
       const admin = getAdmin()
-      if (matricNumber === admin.username && password === admin.password) {
+      if (matricNumber.trim() === admin.username && password === admin.password) {
         const adminUser = { role: 'admin', username: admin.username }
         setSession(adminUser)
         setCurrentUser(adminUser)
@@ -29,30 +39,63 @@ function Login({ setPage, setCurrentUser }) {
         return
       }
 
-      // Check student login
+      // ── Check lockout ──
+      if (isAccountLocked(matricNumber.trim().toUpperCase())) {
+        setError('🔒 This account has been permanently locked due to too many failed login attempts. Please contact the administrator.')
+        setLoading(false)
+        return
+      }
+
+      // ── Student login ──
       const students = getStudents()
       const student = students.find(
-        (s) => s.matricNumber === matricNumber.trim() && s.password === password
+        s => s.matricNumber.toUpperCase() === matricNumber.trim().toUpperCase()
+          && s.password === password
       )
 
       if (!student) {
-        // Check if matric exists but wrong password
-        const matricExists = students.find(s => s.matricNumber === matricNumber.trim())
-        if (matricExists) {
-          setError('Incorrect password. Please try again.')
+        const matricExists = students.find(
+          s => s.matricNumber.toUpperCase() === matricNumber.trim().toUpperCase()
+        )
+
+        if (matricExists && !matricExists.password) {
+          setError('You have not registered yet. Please register to set your password first.')
+          setLoading(false)
+          return
+        }
+
+        // Record failed attempt
+        const attempt = recordFailedAttempt(matricNumber.trim().toUpperCase())
+        if (attempt.locked) {
+          setError('🔒 Your account has been permanently locked after 3 failed attempts. Contact the administrator.')
         } else {
-          setError('Student record not found. Please register to continue.')
+          const remaining = 3 - attempt.count
+          if (matricExists) {
+            setError(`❌ Incorrect password. ${remaining} attempt${remaining !== 1 ? 's' : ''} remaining before your account is locked.`)
+          } else {
+            setError('❌ Matric number not found. Please register first or check your matric number.')
+          }
         }
         setLoading(false)
         return
       }
 
-      // Successful student login
+      if (!student.isRegistered) {
+        setError('Your account is not fully registered. Please complete registration first.')
+        setLoading(false)
+        return
+      }
+
+      // ── Success → Generate OTP ──
+      resetLoginAttempts(matricNumber.trim().toUpperCase())
+      const otp = generateOTP()
+      saveOTP(otp, student.matricNumber)
+
       const sessionUser = { ...student, role: 'student' }
       setSession(sessionUser)
       setCurrentUser(sessionUser)
-      setPage('ballot')
       setLoading(false)
+      setPage('otp')
     }, 800)
   }
 
@@ -62,22 +105,20 @@ function Login({ setPage, setCurrentUser }) {
 
   return (
     <div className="auth-page">
-      {/* Header */}
       <header className="auth-header">
         <div className="logo-icon">🎓</div>
         <div className="logo-text">
-          <h1>PLASU Student Union</h1>
-          <p>Online Voting System — 2025/2026 Elections</p>
+          <h1>Plateau State University — Student Union</h1>
+          <p>Online Voting System — 2024/2025 Elections</p>
         </div>
       </header>
 
-      {/* Body */}
       <main className="auth-body">
         <div className="auth-card">
           <div className="auth-card-header">
             <div className="card-icon">🔐</div>
             <h2>Student Login</h2>
-            <p>Enter your matriculation number and password to access the ballot</p>
+            <p>Enter your PLASU matric number and password to access the ballot</p>
           </div>
 
           {error && (
@@ -98,11 +139,10 @@ function Login({ setPage, setCurrentUser }) {
             <label>Matriculation Number <span>*</span></label>
             <input
               type="text"
-              placeholder="e.g. PLASU/2025/FNAS/0000"
+              placeholder="e.g. PLASU/2020/FNAS/001"
               value={matricNumber}
-              onChange={(e) => setMatricNumber(e.target.value)}
+              onChange={e => setMatricNumber(e.target.value)}
               onKeyDown={handleKeyDown}
-              className={error && !matricNumber ? 'error' : ''}
             />
           </div>
 
@@ -112,9 +152,8 @@ function Login({ setPage, setCurrentUser }) {
               type="password"
               placeholder="Enter your password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={e => setPassword(e.target.value)}
               onKeyDown={handleKeyDown}
-              className={error && !password ? 'error' : ''}
             />
           </div>
 
@@ -123,19 +162,18 @@ function Login({ setPage, setCurrentUser }) {
             onClick={handleLogin}
             disabled={loading}
           >
-            {loading ? <><span className="spinner"></span> Verifying...</> : '🗳️ Proceed to Vote'}
+            {loading
+              ? <><span className="spinner"></span> Verifying...</>
+              : '🔐 Login & Get OTP'}
           </button>
 
           <div className="divider">or</div>
 
           <div className="alert alert-info">
-            🆕 New student? Your record may not be in the system yet.
+            🆕 First time? Enter your matric number on the registration page to get started.
           </div>
 
-          <button
-            className="btn btn-outline"
-            onClick={() => setPage('register')}
-          >
+          <button className="btn btn-outline" onClick={() => setPage('register')}>
             📝 Register as New Student
           </button>
 
@@ -146,7 +184,7 @@ function Login({ setPage, setCurrentUser }) {
       </main>
 
       <footer className="auth-page-footer">
-        © 2026 Plateau State University Student Union. All rights reserved. Powered by UniVote.
+        © 2024 Plateau State University Student Union. All rights reserved.
       </footer>
     </div>
   )

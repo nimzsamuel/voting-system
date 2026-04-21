@@ -274,7 +274,7 @@ function Results({ currentUser, setPage, setCurrentUser }) {
       </main>
 
       <footer className="auth-page-footer">
-        © 2024 University Student Union. All rights reserved. Powered by UniVote.
+        © 2025 Plateau State University Student Union. All rights reserved. Powered by UniVote.
       </footer>
     </div>
   )
@@ -287,7 +287,7 @@ function ResultsHeader({ currentUser, onLogout, isAdmin, setPage }) {
       <div className="ballot-header-left">
         <span className="logo-icon">🎓</span>
         <div>
-          <h1>University Student Union</h1>
+          <h1>PLASU Student Union</h1>
           <p>Online Voting System — 2024/2025 Elections</p>
         </div>
       </div>

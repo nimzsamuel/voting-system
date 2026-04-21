@@ -1831,3 +1831,203 @@ body {
     width: 100%;
   }
 }
+/* ===== OTP VERIFICATION ===== */
+.otp-reveal-card {
+  background: linear-gradient(135deg, #f0f5ff, #e8f0fe);
+  border: 1.5px solid var(--primary-light);
+  border-radius: var(--radius-md);
+  padding: 18px;
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.otp-reveal-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+}
+
+.otp-reveal-code {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: var(--primary);
+  letter-spacing: 8px;
+  margin: 8px 0;
+  font-family: monospace;
+}
+
+.otp-reveal-btn {
+  background: var(--primary);
+  color: var(--white);
+  border: none;
+  padding: 10px 20px;
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  margin: 8px 0;
+}
+
+.otp-reveal-btn:hover {
+  background: var(--primary-dark);
+}
+
+.otp-reveal-note {
+  font-size: 0.72rem;
+  color: var(--gray-600);
+  margin-top: 10px;
+  line-height: 1.5;
+}
+
+.otp-timer {
+  text-align: center;
+  font-size: 0.88rem;
+  color: var(--primary);
+  background: #eaf1fb;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 16px;
+  border: 1px solid #b8d0f0;
+}
+
+.otp-timer-danger {
+  color: var(--danger);
+  background: #fdecea;
+  border-color: #f5c6c2;
+  animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.otp-input-group {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.otp-box {
+  width: 48px;
+  height: 56px;
+  text-align: center;
+  font-size: 1.4rem;
+  font-weight: 700;
+  border: 2px solid var(--gray-200);
+  border-radius: var(--radius-sm);
+  background: var(--gray-100);
+  color: var(--gray-800);
+  outline: none;
+  transition: var(--transition);
+  font-family: monospace;
+}
+
+.otp-box:focus {
+  border-color: var(--primary);
+  background: var(--white);
+  box-shadow: 0 0 0 3px rgba(26, 60, 110, 0.15);
+}
+
+.otp-box-filled {
+  border-color: var(--primary-light);
+  background: #eaf1fb;
+}
+
+.otp-box-error {
+  border-color: var(--danger);
+  background: #fff5f5;
+}
+
+/* ===== REGISTER — Found Student Card ===== */
+.found-student-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #eafaf1;
+  border: 1.5px solid #b7e4c7;
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  margin-bottom: 16px;
+}
+
+.found-student-check {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.found-student-info {
+  flex: 1;
+}
+
+.found-student-name {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--gray-800);
+  margin-bottom: 3px;
+}
+
+.found-student-meta {
+  font-size: 0.78rem;
+  color: var(--gray-600);
+}
+
+.found-student-change {
+  background: none;
+  border: none;
+  color: var(--danger);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+/* ===== FACULTY LEGEND ===== */
+.faculty-legend {
+  background: var(--gray-100);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  margin-top: 16px;
+}
+
+.faculty-legend-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+}
+
+.faculty-legend-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.faculty-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.8rem;
+}
+
+.faculty-code {
+  background: var(--primary);
+  color: var(--white);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 0.72rem;
+  min-width: 50px;
+  text-align: center;
+}
+
+.faculty-name {
+  color: var(--gray-600);
+}

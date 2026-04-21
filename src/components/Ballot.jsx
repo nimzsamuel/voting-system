@@ -106,6 +106,9 @@ function Ballot({ currentUser, setPage, setCurrentUser }) {
             <h2>You Have Already Voted</h2>
             <p>Your vote has been recorded. You cannot vote more than once.</p>
             <p className="voted-sub">Results will be available once the admin closes the election.</p>
+            <button className="btn btn-primary" onClick={() => setPage('results')} style={{ marginBottom: '12px' }}>
+              📊 View Results
+            </button>
             <button className="btn btn-outline" onClick={handleLogout}>🚪 Logout</button>
           </div>
         </main>
@@ -281,7 +284,7 @@ function Ballot({ currentUser, setPage, setCurrentUser }) {
       </main>
 
       <footer className="auth-page-footer">
-        © 2024 University Student Union. All rights reserved. Powered by UniVote.
+        © 2024 Plateau State University Student Union. All rights reserved. Powered by UniVote.
       </footer>
     </div>
   )

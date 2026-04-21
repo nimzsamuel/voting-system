@@ -1,14 +1,22 @@
-import { useState } from 'react'
-import { getSession } from './utils/storage'
+import { useState, useEffect } from 'react'
+import { getSession, getVotes } from './utils/storage'
 import Login from './components/Login'
 import Register from './components/Register'
 import Ballot from './components/Ballot'
 import AdminDashboard from './components/AdminDashboard'
 import Results from './components/Results'
+import OTPVerification from './components/OTPVerification'
 
 function App() {
   const [page, setPage] = useState('login')
   const [currentUser, setCurrentUser] = useState(getSession())
+
+  useEffect(() => {
+    if (page === 'ballot' && currentUser?.role !== 'admin') {
+      const votes = getVotes()
+      if (votes.electionStatus === 'closed') setPage('results')
+    }
+  }, [page])
 
   const renderPage = () => {
     switch (page) {
@@ -16,6 +24,8 @@ function App() {
         return <Login setPage={setPage} setCurrentUser={setCurrentUser} />
       case 'register':
         return <Register setPage={setPage} />
+      case 'otp':
+        return <OTPVerification currentUser={currentUser} setPage={setPage} setCurrentUser={setCurrentUser} />
       case 'ballot':
         return <Ballot currentUser={currentUser} setPage={setPage} setCurrentUser={setCurrentUser} />
       case 'admin':
@@ -27,11 +37,7 @@ function App() {
     }
   }
 
-  return (
-    <div className="app">
-      {renderPage()}
-    </div>
-  )
+  return <div className="app">{renderPage()}</div>
 }
 
 export default App

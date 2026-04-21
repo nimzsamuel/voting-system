@@ -3,7 +3,9 @@ import {
   getStudents, saveStudents,
   getCandidates, saveCandidates,
   getVotes, saveVotes,
-  clearSession
+  clearSession,
+  unlockAccount,
+  isAccountLocked
 } from '../utils/storage'
 
 const POSITIONS = ['President', 'Vice President', 'Secretary General', 'Financial Secretary']
@@ -15,9 +17,7 @@ function AdminDashboard({ setPage, setCurrentUser }) {
   const [votes, setVotes] = useState({})
   const [notification, setNotification] = useState(null)
 
-  useEffect(() => {
-    loadData()
-  }, [])
+  useEffect(() => { loadData() }, [])
 
   const loadData = () => {
     setStudents(getStudents())
@@ -55,7 +55,6 @@ function AdminDashboard({ setPage, setCurrentUser }) {
   const handleResetElection = () => {
     if (!window.confirm('⚠️ Are you sure you want to reset the entire election? All votes will be cleared. This cannot be undone.')) return
 
-    // Reset votes
     const freshVotes = {
       electionTitle: votes.electionTitle,
       electionStatus: 'open',
@@ -65,10 +64,7 @@ function AdminDashboard({ setPage, setCurrentUser }) {
       records: []
     }
 
-    // Reset candidate vote counts
     const resetCandidates = getCandidates().map(c => ({ ...c, votes: 0 }))
-
-    // Reset student hasVoted flags
     const resetStudents = getStudents().map(s => ({ ...s, hasVoted: false }))
 
     saveVotes(freshVotes)
@@ -82,10 +78,11 @@ function AdminDashboard({ setPage, setCurrentUser }) {
   }
 
   const tabs = [
-    { id: 'overview', label: 'Overview', icon: '📊' },
-    { id: 'candidates', label: 'Candidates', icon: '🧑‍💼' },
-    { id: 'students', label: 'Students', icon: '🎓' },
-    { id: 'activity', label: 'Vote Activity', icon: '📋' },
+    { id: 'overview',   label: 'Overview',      icon: '📊' },
+    { id: 'candidates', label: 'Candidates',     icon: '🧑‍💼' },
+    { id: 'students',   label: 'Students',       icon: '🎓' },
+    { id: 'locked',     label: 'Locked Accounts',icon: '🔒' },
+    { id: 'activity',   label: 'Vote Activity',  icon: '📋' },
   ]
 
   return (
@@ -178,8 +175,19 @@ function AdminDashboard({ setPage, setCurrentUser }) {
               showNotification={showNotification}
             />
           )}
+          {activeTab === 'locked' && (
+            <LockedAccountsTab
+              students={students}
+              showNotification={showNotification}
+              reloadStudents={() => setStudents(getStudents())}
+            />
+          )}
           {activeTab === 'activity' && (
-            <ActivityTab votes={votes} students={students} candidates={candidates} />
+            <ActivityTab
+              votes={votes}
+              students={students}
+              candidates={candidates}
+            />
           )}
         </div>
       </main>
@@ -196,21 +204,19 @@ function OverviewTab({ students, candidates, votes, onToggleElection, onResetEle
   const turnout = totalStudents > 0 ? ((votedStudents / totalStudents) * 100).toFixed(1) : 0
 
   const stats = [
-    { label: 'Total Students', value: totalStudents, icon: '🎓', color: '#1a3c6e' },
-    { label: 'Votes Cast', value: votedStudents, icon: '🗳️', color: '#27ae60' },
-    { label: 'Yet to Vote', value: totalStudents - votedStudents, icon: '⏳', color: '#e8a020' },
-    { label: 'Voter Turnout', value: `${turnout}%`, icon: '📈', color: '#8e44ad' },
+    { label: 'Total Students',  value: totalStudents,                   icon: '🎓', color: '#1a3c6e' },
+    { label: 'Votes Cast',      value: votedStudents,                   icon: '🗳️', color: '#27ae60' },
+    { label: 'Yet to Vote',     value: totalStudents - votedStudents,   icon: '⏳', color: '#e8a020' },
+    { label: 'Voter Turnout',   value: `${turnout}%`,                   icon: '📈', color: '#8e44ad' },
   ]
 
   return (
     <div className="overview-tab">
-      {/* Stats Cards */}
+      {/* Stats */}
       <div className="stats-grid">
         {stats.map((stat, i) => (
           <div key={i} className="stat-card">
-            <div className="stat-icon" style={{ background: stat.color + '18' }}>
-              {stat.icon}
-            </div>
+            <div className="stat-icon" style={{ background: stat.color + '18' }}>{stat.icon}</div>
             <div>
               <div className="stat-value" style={{ color: stat.color }}>{stat.value}</div>
               <div className="stat-label">{stat.label}</div>
@@ -219,7 +225,7 @@ function OverviewTab({ students, candidates, votes, onToggleElection, onResetEle
         ))}
       </div>
 
-      {/* Turnout Progress */}
+      {/* Turnout */}
       <div className="admin-card">
         <h3 className="admin-card-title">📊 Voter Turnout Progress</h3>
         <div className="turnout-bar-wrap">
@@ -232,7 +238,7 @@ function OverviewTab({ students, candidates, votes, onToggleElection, onResetEle
         </div>
       </div>
 
-      {/* Election Control */}
+      {/* Election Controls */}
       <div className="admin-card">
         <h3 className="admin-card-title">⚙️ Election Controls</h3>
         <p className="admin-card-desc">
@@ -266,23 +272,21 @@ function OverviewTab({ students, candidates, votes, onToggleElection, onResetEle
         </div>
       </div>
 
-      {/* Candidates Per Position */}
+      {/* Candidates Summary */}
       <div className="admin-card">
         <h3 className="admin-card-title">🧑‍💼 Candidates Summary</h3>
         <div className="position-summary-grid">
           {POSITIONS.map(pos => {
-            const positionCandidates = candidates.filter(c => c.position === pos)
-            const totalVotes = positionCandidates.reduce((sum, c) => sum + c.votes, 0)
-            const leader = positionCandidates.reduce((a, b) => a.votes > b.votes ? a : b, positionCandidates[0] || {})
+            const posCandidates = candidates.filter(c => c.position === pos)
+            const totalVotes = posCandidates.reduce((sum, c) => sum + c.votes, 0)
+            const leader = posCandidates.reduce((a, b) => a.votes > b.votes ? a : b, posCandidates[0] || {})
             return (
               <div key={pos} className="position-summary-card">
                 <div className="position-summary-title">{pos}</div>
-                <div className="position-summary-count">{positionCandidates.length} candidates</div>
+                <div className="position-summary-count">{posCandidates.length} candidates</div>
                 <div className="position-summary-votes">{totalVotes} votes cast</div>
                 {leader?.fullName && (
-                  <div className="position-summary-leader">
-                    🏅 Leading: <strong>{leader.fullName}</strong>
-                  </div>
+                  <div className="position-summary-leader">🏅 Leading: <strong>{leader.fullName}</strong></div>
                 )}
               </div>
             )
@@ -327,7 +331,7 @@ function CandidatesTab({ candidates, setCandidates, showNotification }) {
     const updated = candidates.filter(c => c.id !== id)
     saveCandidates(updated)
     setCandidates(updated)
-    showNotification('Candidate removed.', 'success')
+    showNotification('Candidate removed.')
   }
 
   const handleAddCandidate = () => {
@@ -351,7 +355,7 @@ function CandidatesTab({ candidates, setCandidates, showNotification }) {
 
   return (
     <div className="candidates-tab">
-      {/* Filter + Add */}
+      {/* Toolbar */}
       <div className="tab-toolbar">
         <div className="filter-group">
           {['All', ...POSITIONS].map(pos => (
@@ -369,7 +373,7 @@ function CandidatesTab({ candidates, setCandidates, showNotification }) {
         </button>
       </div>
 
-      {/* Add Candidate Form */}
+      {/* Add Form */}
       {showAddForm && (
         <div className="admin-card add-form-card">
           <h3 className="admin-card-title">➕ Add New Candidate</h3>
@@ -411,7 +415,9 @@ function CandidatesTab({ candidates, setCandidates, showNotification }) {
                 onChange={e => setNewCandidate(p => ({ ...p, level: e.target.value }))}
               >
                 <option value="">-- Level --</option>
-                {['100','200','300','400','500','600'].map(l => <option key={l} value={l}>{l}L</option>)}
+                {['100','200','300','400','500','600'].map(l => (
+                  <option key={l} value={l}>{l}L</option>
+                ))}
               </select>
             </div>
           </div>
@@ -430,7 +436,7 @@ function CandidatesTab({ candidates, setCandidates, showNotification }) {
         </div>
       )}
 
-      {/* Candidates Table */}
+      {/* Table */}
       <div className="admin-card">
         <h3 className="admin-card-title">
           Showing {filtered.length} candidate{filtered.length !== 1 ? 's' : ''}
@@ -532,8 +538,8 @@ function StudentsTab({ students, setStudents, showNotification }) {
       s.matricNumber.toLowerCase().includes(search.toLowerCase()) ||
       s.department.toLowerCase().includes(search.toLowerCase())
     const matchVoted =
-      filterVoted === 'All' ? true :
-      filterVoted === 'Voted' ? s.hasVoted :
+      filterVoted === 'All'    ? true :
+      filterVoted === 'Voted'  ? s.hasVoted :
       !s.hasVoted
     return matchSearch && matchVoted
   })
@@ -547,7 +553,7 @@ function StudentsTab({ students, setStudents, showNotification }) {
   }
 
   const handleResetVote = (id) => {
-    if (!window.confirm('Reset this student\'s vote? They will be able to vote again.')) return
+    if (!window.confirm("Reset this student's vote? They will be able to vote again.")) return
     const updated = students.map(s => s.id === id ? { ...s, hasVoted: false } : s)
     saveStudents(updated)
     setStudents(updated)
@@ -556,7 +562,6 @@ function StudentsTab({ students, setStudents, showNotification }) {
 
   return (
     <div className="students-tab">
-      {/* Toolbar */}
       <div className="tab-toolbar">
         <input
           type="text"
@@ -590,7 +595,8 @@ function StudentsTab({ students, setStudents, showNotification }) {
                 <th>Matric No.</th>
                 <th>Department</th>
                 <th>Level</th>
-                <th>Status</th>
+                <th>Registered</th>
+                <th>Vote Status</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -612,6 +618,11 @@ function StudentsTab({ students, setStudents, showNotification }) {
                   <td>{student.department}</td>
                   <td>{student.level}L</td>
                   <td>
+                    <span className={`voted-pill ${student.isRegistered ? 'voted-yes' : 'voted-no'}`}>
+                      {student.isRegistered ? '✅ Yes' : '⏳ No'}
+                    </span>
+                  </td>
+                  <td>
                     <span className={`voted-pill ${student.hasVoted ? 'voted-yes' : 'voted-no'}`}>
                       {student.hasVoted ? '✅ Voted' : '⏳ Pending'}
                     </span>
@@ -632,7 +643,7 @@ function StudentsTab({ students, setStudents, showNotification }) {
               ))}
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={6} style={{ textAlign: 'center', padding: '30px', color: 'var(--gray-400)' }}>
+                  <td colSpan={7} style={{ textAlign: 'center', padding: '30px', color: 'var(--gray-400)' }}>
                     No students found.
                   </td>
                 </tr>
@@ -646,12 +657,134 @@ function StudentsTab({ students, setStudents, showNotification }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// LOCKED ACCOUNTS TAB
+// ─────────────────────────────────────────────────────────────────────────────
+function LockedAccountsTab({ students, showNotification, reloadStudents }) {
+  const [lockedList, setLockedList] = useState([])
+
+  useEffect(() => { loadLocked() }, [])
+
+  const loadLocked = () => {
+    const attempts = JSON.parse(localStorage.getItem('loginAttempts')) || {}
+    const locked = Object.entries(attempts)
+      .filter(([_, data]) => data.locked)
+      .map(([matricNumber, data]) => ({
+        matricNumber,
+        attempts: data.count,
+        student: students.find(s => s.matricNumber === matricNumber)
+      }))
+    setLockedList(locked)
+  }
+
+  const handleUnlock = (matricNumber) => {
+    if (!window.confirm(`Unlock account for ${matricNumber}?`)) return
+    unlockAccount(matricNumber)
+    loadLocked()
+    showNotification(`Account ${matricNumber} has been unlocked successfully.`)
+  }
+
+  const handleUnlockAll = () => {
+    if (!window.confirm('Unlock ALL locked accounts?')) return
+    const attempts = JSON.parse(localStorage.getItem('loginAttempts')) || {}
+    Object.keys(attempts).forEach(key => delete attempts[key])
+    localStorage.setItem('loginAttempts', JSON.stringify(attempts))
+    loadLocked()
+    showNotification('All locked accounts have been unlocked.')
+  }
+
+  return (
+    <div className="locked-tab">
+      <div className="tab-toolbar">
+        <div className="alert alert-info" style={{ flex: 1, marginBottom: 0 }}>
+          🔒 Students are locked after <strong>3 failed login attempts</strong>. Only an admin can unlock them.
+        </div>
+        {lockedList.length > 0 && (
+          <button className="btn btn-danger btn-sm" onClick={handleUnlockAll}>
+            🔓 Unlock All
+          </button>
+        )}
+      </div>
+
+      <div className="admin-card">
+        <h3 className="admin-card-title">
+          🔒 {lockedList.length} Locked Account{lockedList.length !== 1 ? 's' : ''}
+        </h3>
+
+        {lockedList.length === 0 ? (
+          <div className="empty-state">
+            <div style={{ fontSize: '3rem' }}>✅</div>
+            <p>No locked accounts. All students can log in normally.</p>
+          </div>
+        ) : (
+          <div className="admin-table-wrap">
+            <table className="admin-table">
+              <thead>
+                <tr>
+                  <th>Student</th>
+                  <th>Matric No.</th>
+                  <th>Department</th>
+                  <th>Failed Attempts</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {lockedList.map(({ matricNumber, attempts, student }) => (
+                  <tr key={matricNumber}>
+                    <td>
+                      {student ? (
+                        <div className="table-student">
+                          <div className="student-initials">
+                            {student.fullName.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                          </div>
+                          <div>
+                            <div className="student-name">{student.fullName}</div>
+                            <div className="student-email">{student.email}</div>
+                          </div>
+                        </div>
+                      ) : (
+                        <span style={{ color: 'var(--gray-400)', fontSize: '0.85rem' }}>Unknown student</span>
+                      )}
+                    </td>
+                    <td><code>{matricNumber}</code></td>
+                    <td>{student?.department || '—'}</td>
+                    <td>
+                      <span style={{ color: 'var(--danger)', fontWeight: 700 }}>
+                        {attempts} / 3
+                      </span>
+                    </td>
+                    <td>
+                      <span className="voted-pill" style={{ background: '#fdecea', color: 'var(--danger)' }}>
+                        🔒 Locked
+                      </span>
+                    </td>
+                    <td>
+                      <button
+                        className="tbl-btn"
+                        style={{ background: '#eafaf1', color: 'var(--success)', fontWeight: 700 }}
+                        onClick={() => handleUnlock(matricNumber)}
+                      >
+                        🔓 Unlock
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // ACTIVITY TAB
 // ─────────────────────────────────────────────────────────────────────────────
 function ActivityTab({ votes, students, candidates }) {
   const records = votes.records || []
 
-  const getStudentById = (id) => students.find(s => s.id === id)
+  const getStudentById  = (id) => students.find(s => s.id === id)
   const getCandidateById = (id) => candidates.find(c => c.id === id)
 
   return (
@@ -677,7 +810,7 @@ function ActivityTab({ votes, students, candidates }) {
               </thead>
               <tbody>
                 {records.map((record, index) => {
-                  const student = getStudentById(record.studentId)
+                  const student   = getStudentById(record.studentId)
                   const candidate = getCandidateById(record.candidateId)
                   return (
                     <tr key={index}>
